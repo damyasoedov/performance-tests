@@ -9,6 +9,7 @@
 
 *.log
 tmp/
+temp/
 
 .env
 *.env.local
