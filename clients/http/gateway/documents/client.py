@@ -1,28 +1,18 @@
-from typing import TypedDict
-
 from httpx import Response
 
 from clients.http.client import HTTPClient
 from clients.http.gateway.client import build_gateway_http_client
-
-
-class DocumentDict(TypedDict):
-    url: str
-    document: str
-
-
-class GetTariffDocumentResponseDict(TypedDict):
-    tariff: DocumentDict
-
-
-class GetContractDocumentResponseDict(TypedDict):
-    contract: DocumentDict
+from clients.http.gateway.documents.schema import (
+    GetContractDocumentResponseSchema,
+    GetTariffDocumentResponseSchema,
+)
 
 
 class DocumentsGatewayHTTPClient(HTTPClient):
     """
     Client for interacting with the documents API.
     """
+
     def get_tariff_document_api(self, account_id: str) -> Response:
         """
         Retrieves the tariff document for the given account id.
@@ -41,25 +31,27 @@ class DocumentsGatewayHTTPClient(HTTPClient):
         """
         return self.get(url=f'/api/v1/documents/contract-document/{account_id}')
 
-    def get_tariff_document(self, account_id: str) -> GetTariffDocumentResponseDict:
+    def get_tariff_document(self, account_id: str) -> GetTariffDocumentResponseSchema:
         """
         Retrieves the tariff document for the given account id.
 
         :param account_id: The account ID to retrieve the tariff document for.
-        :return: A TypedDict containing the tariff document.
+        :return: A response schema containing the tariff document.
         """
         response = self.get_tariff_document_api(account_id=account_id)
-        return response.json()
 
-    def get_contract_document(self, account_id: str) -> GetContractDocumentResponseDict:
+        return GetTariffDocumentResponseSchema.model_validate_json(response.text)
+
+    def get_contract_document(self, account_id: str) -> GetContractDocumentResponseSchema:
         """
         Retrieves the contract document for the given account id.
 
         :param account_id: The account ID to retrieve the contract document for.
-        :return: A TypedDict containing the contract document.
+        :return: A response schema containing the contract document.
         """
         response = self.get_contract_document_api(account_id=account_id)
-        return response.json()
+
+        return GetContractDocumentResponseSchema.model_validate_json(response.text)
 
 
 def build_documents_gateway_http_client() -> DocumentsGatewayHTTPClient:

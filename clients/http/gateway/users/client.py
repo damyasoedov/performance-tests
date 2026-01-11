@@ -1,47 +1,13 @@
-from typing import TypedDict
-
 from httpx import Response
 from shortuuid import uuid
 
 from clients.http.client import HTTPClient
 from clients.http.gateway.client import build_gateway_http_client
-
-
-class CreateUserRequestDict(TypedDict):
-    """
-    Data structure for creating a new user.
-    """
-    email: str
-    lastName: str
-    firstName: str
-    middleName: str
-    phoneNumber: str
-
-
-class UserDict(TypedDict):
-    """
-    Data structure representing a user.
-    """
-    id: str
-    email: str
-    lastName: str
-    firstName: str
-    middleName: str
-    phoneNumber: str
-
-
-class GetUserResponseDict(TypedDict):
-    """
-    Response data structure for retrieving user data.
-    """
-    user: UserDict
-
-
-class CreateUserResponseDict(TypedDict):
-    """
-    Response data structure for creating a new user.
-    """
-    user: UserDict
+from clients.http.gateway.users.schema import (
+    GetUserResponseSchema,
+    CreateUserRequestSchema,
+    CreateUserResponseSchema
+)
 
 
 class UsersGatewayHTTPClient(HTTPClient):
@@ -51,14 +17,14 @@ class UsersGatewayHTTPClient(HTTPClient):
     Provides methods for creating new users and retrieving user data by ID.
     """
 
-    def create_user_api(self, payload: CreateUserRequestDict) -> Response:
+    def create_user_api(self, payload: CreateUserRequestSchema) -> Response:
         """
         Creates new user using raw API endpoint.
 
-        :param payload: A TypedDict object containing the user creation data.
+        :param payload: A pydantic-model containing the user creation data.
         :return: The server response(httpx.Response object).
         """
-        return self.post('/api/v1/users', payload=payload)
+        return self.post('/api/v1/users', payload=payload.model_dump(by_alias=True))
 
     def get_user_api(self, user_id: str) -> Response:
         """
@@ -69,31 +35,31 @@ class UsersGatewayHTTPClient(HTTPClient):
         """
         return self.get(f'/api/v1/users/{user_id}')
 
-    def get_user(self, user_id: str) -> GetUserResponseDict:
+    def get_user(self, user_id: str) -> GetUserResponseSchema:
         """
         Retrieves user data by user ID.
 
         :param user_id: The ID of the user to retrieve.
-        :return: A TypedDict object containing the user data.
+        :return: A response schema containing the user data.
         """
         response = self.get_user_api(user_id)
-        return response.json()
+        return GetUserResponseSchema.model_validate_json(response.text)
 
-    def create_user(self) -> CreateUserResponseDict:
+    def create_user(self) -> CreateUserResponseSchema:
         """
         Creates a new user with randomly generated data.
 
-        :return: A TypedDict object containing the data of the created new user.
+        :return: A response schema containing the data of the created new user.
         """
-        create_user_payload = CreateUserRequestDict(
+        create_user_payload = CreateUserRequestSchema(
             email=f"{uuid()}@example.com",
-            lastName="string",
-            firstName="string",
-            middleName="string",
-            phoneNumber="string",
+            last_name="string",
+            first_name="string",
+            middle_name="string",
+            phone_number="string",
         )
         response = self.create_user_api(create_user_payload)
-        return response.json()
+        return CreateUserResponseSchema.model_validate_json(response.text)
 
 
 def build_users_gateway_http_client() -> UsersGatewayHTTPClient:
