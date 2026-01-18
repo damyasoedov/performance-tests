@@ -1,5 +1,4 @@
 from httpx import Response
-from shortuuid import uuid
 
 from clients.http.client import HTTPClient
 from clients.http.gateway.client import build_gateway_http_client
@@ -51,13 +50,7 @@ class UsersGatewayHTTPClient(HTTPClient):
 
         :return: A response schema containing the data of the created new user.
         """
-        create_user_payload = CreateUserRequestSchema(
-            email=f"{uuid()}@example.com",
-            last_name="string",
-            first_name="string",
-            middle_name="string",
-            phone_number="string",
-        )
+        create_user_payload = CreateUserRequestSchema()
         response = self.create_user_api(create_user_payload)
         return CreateUserResponseSchema.model_validate_json(response.text)
 

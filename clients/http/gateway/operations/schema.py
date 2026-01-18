@@ -2,6 +2,8 @@ from pydantic import BaseModel, Field, HttpUrl, ConfigDict
 from enum import StrEnum
 from datetime import datetime
 
+from tools.fakers import fake
+
 
 class OperationType(StrEnum):
     FEE = "FEE"
@@ -108,8 +110,8 @@ class MakeOperationRequestSchema(BaseModel):
     """
     model_config = ConfigDict(populate_by_name=True)
 
-    status: OperationStatus
-    amount: float
+    status: OperationStatus = Field(default_factory=lambda: fake.enum_choice(OperationStatus))
+    amount: float = Field(default_factory=fake.amount)
     card_id: str = Field(alias='cardId')
     account_id: str = Field(alias='accountId')
 
@@ -184,7 +186,7 @@ class MakePurchaseOperationRequestSchema(MakeOperationRequestSchema):
 
     Inherits from MakeOperationRequestSchema and contains additional field for purchase category.
     """
-    category: str
+    category: str = Field(default_factory=fake.category)
 
 
 class MakePurchaseOperationResponseSchema(BaseModel):

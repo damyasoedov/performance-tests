@@ -3,7 +3,6 @@ from httpx import Response, QueryParams
 from clients.http.client import HTTPClient
 from clients.http.gateway.client import build_gateway_http_client
 from clients.http.gateway.operations.schema import (
-    OperationStatus,
     GetOperationResponseSchema,
     GetOperationsQuerySchema,
     GetOperationsResponseSchema,
@@ -211,15 +210,6 @@ class OperationsGatewayHTTPClient(HTTPClient):
         response = self.get_operation_api(operation_id=operation_id)
         return GetOperationResponseSchema.model_validate_json(response.text)
 
-    @staticmethod
-    def create_base_payload(card_id: str, account_id: str):
-        return {
-            'status': OperationStatus.COMPLETED,
-            'amount': 100.55,
-            'cardId': card_id,
-            'accountId': account_id
-        }
-
     def make_fee_operation(
             self, card_id: str, account_id: str
     ) -> MakeFeeOperationResponseSchema:
@@ -229,8 +219,7 @@ class OperationsGatewayHTTPClient(HTTPClient):
         :param account_id: The account ID to create fee operation for.
         :return: A response schema containing the fee operation details.
         """
-        base_payload = self.create_base_payload(card_id=card_id, account_id=account_id)
-        request_payload = MakeFeeOperationRequestSchema(**base_payload)
+        request_payload = MakeFeeOperationRequestSchema(card_id=card_id, account_id=account_id)
         response = self.make_fee_operation_api(payload=request_payload)
         return MakeFeeOperationResponseSchema.model_validate_json(response.text)
 
@@ -244,8 +233,7 @@ class OperationsGatewayHTTPClient(HTTPClient):
         :param account_id: The account ID to create top up operation for.
         :return: A response schema containing the top-up operation details.
         """
-        base_payload = self.create_base_payload(card_id=card_id, account_id=account_id)
-        request_payload = MakeTopUpOperationRequestSchema(**base_payload)
+        request_payload = MakeTopUpOperationRequestSchema(card_id=card_id, account_id=account_id)
         response = self.make_top_up_operation_api(payload=request_payload)
         return MakeTopUpOperationResponseSchema.model_validate_json(response.text)
 
@@ -259,8 +247,7 @@ class OperationsGatewayHTTPClient(HTTPClient):
         :param account_id: The account ID to create cashback operation for.
         :return: A response schema containing the cashback operation details.
         """
-        base_payload = self.create_base_payload(card_id=card_id, account_id=account_id)
-        request_payload = MakeCashbackOperationRequestSchema(**base_payload)
+        request_payload = MakeCashbackOperationRequestSchema(card_id=card_id, account_id=account_id)
         response = self.make_cashback_operation_api(payload=request_payload)
         return MakeCashbackOperationResponseSchema.model_validate_json(response.text)
 
@@ -274,8 +261,7 @@ class OperationsGatewayHTTPClient(HTTPClient):
         :param account_id: The account ID to create transfer operation for.
         :return: A response schema containing the transfer operation details.
         """
-        base_payload = self.create_base_payload(card_id=card_id, account_id=account_id)
-        request_payload = MakeTransferOperationRequestSchema(**base_payload)
+        request_payload = MakeTransferOperationRequestSchema(card_id=card_id, account_id=account_id)
         response = self.make_transfer_operation_api(payload=request_payload)
         return MakeTransferOperationResponseSchema.model_validate_json(response.text)
 
@@ -289,9 +275,7 @@ class OperationsGatewayHTTPClient(HTTPClient):
         :param account_id: The account ID to create purchase operation for.
         :return: A response schema containing the purchase operation details.
         """
-        base_payload = self.create_base_payload(card_id=card_id, account_id=account_id)
-        purchase_payload = base_payload | {'amount': 10.55, 'category': 'CINEMA'}
-        request_payload = MakePurchaseOperationRequestSchema(**purchase_payload)
+        request_payload = MakePurchaseOperationRequestSchema(card_id=card_id, account_id=account_id)
         response = self.make_purchase_operation_api(payload=request_payload)
         return MakePurchaseOperationResponseSchema.model_validate_json(response.text)
 
@@ -305,8 +289,7 @@ class OperationsGatewayHTTPClient(HTTPClient):
         :param account_id: The account ID to create bill payment operation for.
         :return: A response schema containing the bill payment operation details.
         """
-        base_payload = self.create_base_payload(card_id=card_id, account_id=account_id)
-        request_payload = MakeBillPaymentOperationRequestSchema(**base_payload)
+        request_payload = MakeBillPaymentOperationRequestSchema(card_id=card_id, account_id=account_id)
         response = self.make_bill_payment_operation_api(payload=request_payload)
         return MakeBillPaymentOperationResponseSchema.model_validate_json(response.text)
 
@@ -320,8 +303,7 @@ class OperationsGatewayHTTPClient(HTTPClient):
         :param account_id: The account ID to create cash withdrawal operation for.
         :return: A response schema containing the cash withdrawal operation details.
         """
-        base_payload = self.create_base_payload(card_id=card_id, account_id=account_id)
-        request_payload = MakeCashWithdrawalOperationRequestSchema(**base_payload)
+        request_payload = MakeCashWithdrawalOperationRequestSchema(card_id=card_id, account_id=account_id)
         response = self.make_cash_withdrawal_operation_api(payload=request_payload)
         return MakeCashWithdrawalOperationResponseSchema.model_validate_json(response.text)
 
