@@ -1,5 +1,6 @@
 from faker import Faker
 from faker.providers.python import TEnum
+from google.protobuf.internal.enum_type_wrapper import EnumTypeWrapper
 from shortuuid import uuid
 
 
@@ -105,6 +106,14 @@ class Fake:
         :return: A random amount.
         """
         return self.float_generator(1, 1000)
+
+    def proto_enum_choice(self, value: EnumTypeWrapper) -> int:
+        """Chooses a random value from a given proto enum.
+
+        :param value: The enum class to choose the random value from.
+        :return: A random value chosen from the enum.
+        """
+        return self.faker.random_element(value.values())
 
 
 fake = Fake(faker=Faker('ru_RU'))
