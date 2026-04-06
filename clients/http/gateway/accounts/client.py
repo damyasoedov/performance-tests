@@ -1,6 +1,7 @@
 from httpx import Response
+from locust.env import Environment
 
-from clients.http.client import HTTPClient, QueryParams
+from clients.http.client import HTTPClient, HTTPClientExtensions, QueryParams
 from clients.http.gateway.accounts.schema import (
     GetAccountsQuerySchema,
     GetAccountsResponseSchema,
@@ -13,31 +14,33 @@ from clients.http.gateway.accounts.schema import (
     OpenSavingsAccountRequestSchema,
     OpenSavingsAccountResponseSchema,
 )
-from clients.http.gateway.client import build_gateway_http_client
+from clients.http.gateway.client import (
+    build_gateway_http_client,
+    build_gateway_locust_http_client
+)
 
 
 class AccountsGatewayHTTPClient(HTTPClient):
-    """
-    Class for interacting with the Accounts API
+    """Class for interacting with the Accounts API
 
     Provides methods for creating different types of accounts and retrieving accounts.
     """
 
     def get_accounts_api(self, query: GetAccountsQuerySchema) -> Response:
-        """
-        Retrieves a list of user accounts via GET request
+        """Retrieves a list of user accounts via GET request
+
         :param query: A dictionary containing query parameters for filtering accounts.
                       See :class: ``GetAccountsQueryDict`` for details
         :return: The HTTP response object. Accounts data is available in the ``response.json()`` method.
         """
         return self.get(
             url='/api/v1/accounts',
-            params=QueryParams(**query.model_dump(by_alias=True))
+            params=QueryParams(**query.model_dump(by_alias=True)),
+            extensions=HTTPClientExtensions(route='/api/v1/accounts')
         )
 
     def open_deposit_account_api(self, payload: OpenDepositAccountRequestSchema) -> Response:
-        """
-        Opens a deposit account via raw API endpoint.
+        """Opens a deposit account via raw API endpoint.
 
         :param payload: Request data for opening a deposit account
         :return: The server response(httpx.Response object with the account data)
@@ -48,8 +51,8 @@ class AccountsGatewayHTTPClient(HTTPClient):
         )
 
     def open_savings_account_api(self, payload: OpenSavingsAccountRequestSchema) -> Response:
-        """
-        Opens a savings account via raw API endpoint.
+        """Opens a savings account via raw API endpoint.
+
         :param payload: Request data for opening a savings account
         :return: The server response(httpx.Response object with the account data)
         """
@@ -59,8 +62,8 @@ class AccountsGatewayHTTPClient(HTTPClient):
         )
 
     def open_debit_card_account_api(self, payload: OpenDebitCardAccountRequestSchema) -> Response:
-        """
-        Opens a debit card account via raw API endpoint.
+        """Opens a debit card account via raw API endpoint.
+
         :param payload: Request data for opening a debit card account.
         :return: The server response(httpx.Response object).
         """
@@ -70,8 +73,8 @@ class AccountsGatewayHTTPClient(HTTPClient):
         )
 
     def open_credit_card_account_api(self, payload: OpenCreditCardAccountRequestSchema) -> Response:
-        """
-        Opens a credit card account via raw API endpoint.
+        """Opens a credit card account via raw API endpoint.
+
         :param payload: Request data for opening a credit card account.
         :return: The server response(httpx.Response object).
         """
@@ -81,8 +84,7 @@ class AccountsGatewayHTTPClient(HTTPClient):
         )
 
     def get_accounts(self, user_id: str) -> GetAccountsResponseSchema:
-        """
-        Retrieves a list of user accounts by user id.
+        """Retrieves a list of user accounts by user id.
 
         :param user_id: The ID of the user to retrieve accounts for.
         :return: A response schema containing the user accounts data.
@@ -92,8 +94,7 @@ class AccountsGatewayHTTPClient(HTTPClient):
         return GetAccountsResponseSchema.model_validate_json(response.text)
 
     def open_deposit_account(self, user_id: str) -> OpenDepositAccountResponseSchema:
-        """
-        Creates a new deposit account and returns the account details.
+        """Creates a new deposit account and returns the account details.
 
         :param user_id: The ID of the user to create the deposit account for.
         :return: A response schema containing the deposit account details.
@@ -103,8 +104,7 @@ class AccountsGatewayHTTPClient(HTTPClient):
         return OpenDepositAccountResponseSchema.model_validate_json(response.text)
 
     def open_savings_account(self, user_id: str) -> OpenSavingsAccountResponseSchema:
-        """
-        Creates a new savings account and returns the account details.
+        """Creates a new savings account and returns the account details.
 
         :param user_id: The ID of the user to create the savings account for.
         :return: A response schema containing the savings account details.
@@ -114,8 +114,7 @@ class AccountsGatewayHTTPClient(HTTPClient):
         return OpenSavingsAccountResponseSchema.model_validate_json(response.text)
 
     def open_debit_card_account(self, user_id: str) -> OpenDebitCardAccountResponseSchema:
-        """
-        Creates a new debit card account and returns the account details.
+        """Creates a new debit card account and returns the account details.
 
         :param user_id: The ID of the user to create the debit card account for.
         :return: A response schema containing the debit card account details.
@@ -125,8 +124,7 @@ class AccountsGatewayHTTPClient(HTTPClient):
         return OpenDebitCardAccountResponseSchema.model_validate_json(response.text)
 
     def open_credit_card_account(self, user_id: str) -> OpenCreditCardAccountResponseSchema:
-        """
-        Creates a new credit card account and returns the account details.
+        """Creates a new credit card account and returns the account details.
 
         :param user_id: The ID of the user to create the credit card account for.
         :return: A response schema containing the credit card account details.
@@ -137,10 +135,23 @@ class AccountsGatewayHTTPClient(HTTPClient):
 
 
 def build_accounts_gateway_http_client() -> AccountsGatewayHTTPClient:
-    """
-    Builds and returns an AccountsGatewayHTTPClient instance.
+    """Builds and returns an AccountsGatewayHTTPClient instance.
 
     Uses the build_gateway_http_client function to create an underlying http client.
     :return: An instance of the AccountsGatewayHTTPClient.
     """
     return AccountsGatewayHTTPClient(client=build_gateway_http_client())
+
+
+def build_accounts_gateway_locust_http_client(environment: Environment) -> \
+        AccountsGatewayHTTPClient:
+    """Builds and returns an AccountsGatewayHTTPClient instance adapted for Locust.
+
+    Client automatically collects the metrics and sends them to Locust via hooks.
+    It is used exclusively for load testing purposes.
+    :param environment: Locust environment object.
+    :return: An instance of AccountsGatewayHTTPClient with metric collection hooks.
+    """
+    return AccountsGatewayHTTPClient(
+        client=build_gateway_locust_http_client(environment=environment)
+    )
